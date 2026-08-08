@@ -1,17 +1,19 @@
 import asyncio
 import io
+import os
 import pandas as pd
 from aiogram import Bot
 from PIL import Image, ImageDraw, ImageFont
 import edge_tts
 
 # ================= НАСТРОЙКИ =================
-BOT_TOKEN = "8875054566:AAHki10mmRtpO6UWukXBSvoyHhAi8uAqJKE"
+# Токен берется из защищенных секретов GitHub
+BOT_TOKEN = os.getenv("BOT_TOKEN")
 CHANNEL_ID = "@LernenDeutschland"  # Ваше имя канала
-SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/18O6oltKwgrr6wVK5R7P_2dCTGK0ukWSG/edit?usp=drivesdk&ouid=114883081012758860769&rtpof=true&sd=true"
+SHEET_CSV_URL = "https://docs.google.com/spreadsheets/d/18O6oltKwgrr6wVK5R7P_2dCTGK0ukWSG/export?format=csv"
 # =============================================
 
-bot = Bot(token=8875054566:AAHki10mmRtpO6UWukXBSvoyHhAi8uAqJKE)
+bot = Bot(token=BOT_TOKEN)
 
 def create_card_image(word, translation, forms, example, level):
     img = Image.new('RGB', (1080, 1080), color='#1E1E2E')
@@ -54,12 +56,15 @@ async def generate_audio(text):
     return bio
 
 async def main():
+    if not BOT_TOKEN:
+        print("Ошибка: BOT_TOKEN не найден в Secrets!")
+        return
+
     df = pd.read_csv(SHEET_CSV_URL)
     if df.empty:
         print("Таблица пуста!")
         return
 
-    # Выбираем случайную строчку из таблицы
     row = df.sample(n=1).iloc[0]
     post_type = str(row.get('type', 'verb'))
 
